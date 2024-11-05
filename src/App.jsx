@@ -4,32 +4,34 @@ import axios from "axios";
 
 function App() {
   const [input, setInput] = useState("");
-  const [usernames, setUsernames] = useState(["adf", "afafghj"]);
+  const [usernames, setUsernames] = useState([]);
 
   // const GITHUB_TOKEN =
 
   async function fetchData() {
+    if (!input.trim()) return;
     try {
       const res = await axios.get(
         `https://api.github.com/search/users?q=${input}`,
         {
           headers: {
-            Authorization: `token ${import.meta.VITE_TOKEN}`,
+            Authorization: `token ${import.meta.env.VITE_TOKEN}`,
           },
         }
       );
-      const names = res.data.items.map((item) => item.login);
+      const names = res.data.items || [];
       setUsernames(names);
       console.log(names);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setUsernames([]);
     }
   }
-  const newArr = usernames;
+  let newArr = usernames.map((item) => item.login);
+
   function handleIt(username) {
     setInput(username);
     setUsernames([]);
-    // newArr = [];
   }
 
   useEffect(() => {
@@ -37,6 +39,14 @@ function App() {
       fetchData();
     }
   }, [input]);
+
+  // useEffect(() => {
+  //   const delayDebounce = setTimeout(() => {
+  //     if (input) fetchData();
+  //   }, 300);
+
+  //   return () => clearTimeout(delayDebounce);
+  // }, [input]);
 
   return (
     <>
@@ -47,13 +57,12 @@ function App() {
         placeholder="Search GitHub users"
       />
       <ul>
-        {usernames.map((username, index) => (
+        {newArr.map((username, index) => (
           <li
             key={index}
             onMouseEnter={() => setInput(username)}
             onClick={() => {
-              let name = username;
-              handleIt(name);
+              handleIt(username);
             }}
             style={{ cursor: "pointer" }}
           >
